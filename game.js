@@ -30,7 +30,11 @@ function getCurrentNode() {
 }
 
 function showScreen(screen) {
-  [screenTitle, screenGame, screenEnding].forEach(s => s.classList.remove('visible'));
+  [screenTitle, screenGame, screenEnding].forEach(s => {
+    s.classList.remove('visible');
+    s.classList.add('hidden');
+  });
+  screen.classList.remove('hidden');
   screen.classList.add('visible');
 }
 
