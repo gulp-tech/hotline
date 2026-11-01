@@ -54,6 +54,11 @@ function playNodeAudio(node) {
   isPlayingAudio = true;
   elHint.style.display = 'none';
   currentAudio = new Audio(node.audio);
+  currentAudio.addEventListener('error', () => {
+    isPlayingAudio = false;
+    currentAudio = null;
+    elHint.style.display = 'block';
+  });
   currentAudio.play().catch(() => {
     // Если браузер заблокировал автовоспроизведение — покажем подсказку
     isPlayingAudio = false;
