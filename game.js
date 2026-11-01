@@ -61,12 +61,14 @@ function playNodeAudio(node) {
   currentAudio.addEventListener('error', () => {
     isPlayingAudio = false;
     currentAudio = null;
-    elHint.style.display = 'block';
+    // Fallback на голос браузера, если аудиофайл не загрузился
+    speakFallback(node.text, node.voice);
   });
   currentAudio.play().catch(() => {
-    // Если браузер заблокировал автовоспроизведение — покажем подсказку
+    // Если браузер заблокировал автовоспроизведение — голос браузера
     isPlayingAudio = false;
-    elHint.style.display = 'block';
+    currentAudio = null;
+    speakFallback(node.text, node.voice);
   });
   currentAudio.addEventListener('ended', () => {
     isPlayingAudio = false;
