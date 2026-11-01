@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hotline — ночная смена</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="game-container">
+    <!-- Игровой экран -->
+    <div class="screen" id="screen-title">
+      <h1 class="title">HOTLINE</h1>
+      <div class="subtitle">Ночная смена</div>
+      <button class="btn btn-start" id="btn-start">Начать смену</button>
+      <div class="controls-hint">ЛКМ — продолжить · Пробел — пропустить реплику</div>
+    </div>
+
+    <div class="screen screen-game hidden" id="screen-game">
+      <div class="hud">
+        <div class="clock" id="clock">00:00</div>
+        <div class="call-status" id="call-status">Линия свободна</div>
+      </div>
+
+      <div class="scene">
+        <div class="character-portrait" id="portrait"></div>
+        <div class="dialogue-box">
+          <div class="speaker" id="speaker"></div>
+          <div class="text" id="text"></div>
+          <div class="choice-list" id="choices"></div>
+          <div class="continue-hint" id="continue-hint">Нажмите, чтобы продолжить ▸</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen screen-ending hidden" id="screen-ending">
+      <h2 class="ending-title" id="ending-title"></h2>
+      <p class="ending-text" id="ending-text"></p>
+      <button class="btn btn-restart" id="btn-restart">Начать сначала</button>
+    </div>
+  </div>
+
+  <script src="dialogue.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
