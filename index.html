@@ -4,11 +4,255 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Hotline — ночная смена</title>
-  <link rel="stylesheet" href="style.css" />
+  <style>
+    :root {
+      --bg: #0b0d12;
+      --panel: #141822;
+      --accent: #ff4d4d;
+      --accent-dim: #b32626;
+      --text: #e8eaf2;
+      --text-dim: #9aa3b2;
+      --operator: #4fc3f7;
+      --caller: #ffab40;
+      --mysterious: #b388ff;
+      --dispatcher: #ff8a80;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      overflow: hidden;
+    }
+
+    .game-container {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ---------- Title screen ---------- */
+    .screen {
+      width: 100%;
+      height: 100%;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .screen.visible { display: flex; }
+
+    .screen-title {
+      background: radial-gradient(circle at center, #1a1f2e 0%, #0b0d12 100%);
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .title {
+      font-size: clamp(2.5rem, 8vw, 5rem);
+      letter-spacing: 0.6rem;
+      text-transform: uppercase;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+      text-shadow: 0 0 20px rgba(255, 77, 77, 0.35);
+    }
+
+    .subtitle {
+      font-size: 1.25rem;
+      color: var(--text-dim);
+      letter-spacing: 0.2rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .btn {
+      padding: 0.9rem 2rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      letter-spacing: 0.1rem;
+      text-transform: uppercase;
+      color: #fff;
+      background: var(--accent);
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      box-shadow: 0 0 20px rgba(255, 77, 77, 0.45);
+      transition: transform 0.1s, filter 0.2s;
+    }
+    .btn:active { transform: scale(0.96); }
+    .btn:hover { filter: brightness(1.15); }
+
+    .controls-hint {
+      margin-top: 2rem;
+      font-size: 0.85rem;
+      color: var(--text-dim);
+    }
+
+    /* ---------- Game screen ---------- */
+    .screen-game {
+      flex-direction: column;
+      background: #0f121a;
+    }
+
+    .hud {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 1.5rem;
+      background: var(--panel);
+      border-bottom: 1px solid #232938;
+      font-size: 0.9rem;
+      color: var(--text-dim);
+      letter-spacing: 0.05em;
+    }
+
+    .clock { font-variant-numeric: tabular-nums; color: var(--text); font-weight: 600; }
+    .call-status { font-style: italic; }
+
+    .scene {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 2rem 3rem 3rem;
+      overflow: hidden;
+    }
+
+    .character-portrait {
+      width: 260px;
+      height: 340px;
+      background: var(--panel);
+      border: 3px solid #2a3144;
+      border-radius: 12px;
+      margin-right: 2rem;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      color: var(--text-dim);
+      font-size: 0.8rem;
+      text-align: center;
+      padding: 0.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .portrait-face {
+      position: absolute;
+      inset: 0;
+      background: #1c212e;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 4rem;
+    }
+
+    .dialogue-box {
+      flex: 1;
+      max-width: 700px;
+      background: var(--panel);
+      border-left: 4px solid var(--accent);
+      border-radius: 0 12px 12px 0;
+      padding: 1.75rem 2rem;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    }
+
+    .speaker {
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 0.6rem;
+      opacity: 0.9;
+    }
+
+    .text {
+      font-size: 1.35rem;
+      line-height: 1.7;
+      white-space: pre-wrap;
+    }
+
+    .choice-list {
+      margin-top: 1.6rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .choice-btn {
+      background: transparent;
+      border: 2px solid var(--accent-dim);
+      color: var(--text);
+      padding: 0.85rem 1.2rem;
+      border-radius: 8px;
+      text-align: left;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: all 0.15s;
+      opacity: 0.95;
+    }
+    .choice-btn:hover {
+      background: var(--accent-dim);
+      border-color: var(--accent);
+      transform: translateX(6px);
+    }
+    .choice-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .continue-hint {
+      margin-top: 1.4rem;
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      text-align: right;
+      animation: blink 1.2s infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.35; }
+    }
+
+    /* ---------- Ending screen ---------- */
+    .screen-ending {
+      background: #0a0c11;
+      text-align: center;
+      padding: 3rem 1.5rem;
+    }
+    .ending-title {
+      font-size: clamp(2rem, 6vw, 3rem);
+      color: var(--accent);
+      margin-bottom: 1.5rem;
+      text-shadow: 0 0 20px rgba(255, 77, 77, 0.3);
+    }
+    .ending-text {
+      font-size: 1.25rem;
+      line-height: 1.8;
+      color: var(--text-dim);
+      max-width: 600px;
+      margin: 0 auto 2rem;
+    }
+
+    /* ---------- Speaker colors ---------- */
+    .speaker-operator { color: var(--operator); }
+    .speaker-caller { color: var(--caller); }
+    .speaker-marina { color: var(--mysterious); }
+    .speaker-dispatcher { color: var(--dispatcher); }
+
+    .border-operator { border-left-color: var(--operator); }
+    .border-caller { border-left-color: var(--caller); }
+    .border-marina { border-left-color: var(--mysterious); }
+    .border-dispatcher { border-left-color: var(--dispatcher); }
+
+    .hidden { display: none !important; }
+  </style>
 </head>
 <body>
   <div class="game-container">
-    <!-- Игровой экран -->
     <div class="screen visible" id="screen-title">
       <h1 class="title">HOTLINE</h1>
       <div class="subtitle">Ночная смена</div>
@@ -40,7 +284,411 @@
     </div>
   </div>
 
-  <script src="dialogue.js"></script>
-  <script src="game.js"></script>
+  <script>
+    const DIALOGUE = {
+      initialState: {
+        time: '00:00',
+        calls: 0,
+        trustAlexey: 0,
+        trustMarina: 0,
+        dispatcherAnger: 0,
+        foundClue: false,
+        ending: null
+      },
+
+      scenes: {
+        start: [
+          {
+            speaker: 'operator',
+            text: 'Алло, вы меня слышите? Я оператор горячей линии.',
+            voice: 'operator',
+            emotion: 'calm',
+            audio: 'audio/operator_welcome.mp3'
+          },
+          {
+            speaker: 'dispatcher',
+            text: 'Доброй ночи. Смена началась. Линия открыта, жду звонки. И не засыпай на рабочем месте, понимаешь?',
+            voice: 'dispatcher',
+            emotion: 'strict',
+            audio: 'audio/dispatcher_shift.mp3'
+          },
+          {
+            speaker: 'system',
+            text: '*Звонок. Линия 1.*',
+            voice: null,
+            emotion: null,
+            next: 'callAlexey1'
+          }
+        ],
+
+        callAlexey1: [
+          {
+            speaker: 'alexey',
+            text: 'Алло? Алло, вы меня слышите? Пожалуйста, скажите, что вы меня слышите!',
+            voice: 'alexey',
+            emotion: 'panic',
+            audio: 'audio/alexey_panic.mp3',
+            choices: [
+              { text: 'Слышу вас, Алексей. Спокойно, дышите глубже. Что случилось?', next: 'alexeyCalm', flag: { trustAlexey: 1 } },
+              { text: 'Я вас слышу, но говорите быстрее. Время на исходе.', next: 'alexeyRush', flag: { trustAlexey: -1 } },
+              { text: '*Положить трубку*', next: 'alexeyHangup' }
+            ]
+          }
+        ],
+        alexeyCalm: [
+          { speaker: 'alexey', text: 'Я... я в подъезде. Кто-то ломает дверь. Я закрылся в подсобке, но дверь уже скрипит.', voice: 'alexey', emotion: 'fear', audio: 'audio/alexey_fear.mp3', next: 'alexeyClue1' }
+        ],
+        alexeyRush: [
+          { speaker: 'alexey', text: 'Вы не понимаете! Они тут! Пожалуйста, вызовите полицию, я прошу вас!', voice: 'alexey', emotion: 'panic', next: 'alexeyClue1' }
+        ],
+        alexeyHangup: [
+          { speaker: 'system', text: '*Вы положили трубку. Через тридцать секунд раздался крик за дверью подъезда.*', voice: null, emotion: null, next: 'ring2' }
+        ],
+        alexeyClue1: [
+          { speaker: 'alexey', text: 'На столе лежит конверт. На нём написано ваше имя. Я не открывал его...', voice: 'alexey', emotion: 'confused', audio: 'audio/alexey_envelope.mp3', choices: [
+            { text: 'Откройте конверт. Читайте мне, что там.', next: 'alexeyReadEnvelope', flag: { foundClue: true } },
+            { text: 'Не трогайте ничего. Ждите помощи.', next: 'alexeyWaitHelp' }
+          ] }
+        ],
+        alexeyReadEnvelope: [
+          { speaker: 'alexey', text: '"Оператор, если вы читаете это — вы следуете по нашему сценарию. Добро пожаловать в игру."', voice: 'alexey', emotion: 'dread', next: 'ring2' }
+        ],
+        alexeyWaitHelp: [
+          { speaker: 'alexey', text: 'Я боюсь. Пожалуйста, не оставляйте меня на линии.', voice: 'alexey', emotion: 'fear', next: 'ring2' }
+        ],
+
+        ring2: [
+          { speaker: 'system', text: '*Второе звонок. Неизвестный номер.*', voice: null, emotion: null, next: 'callMarina1' }
+        ],
+        callMarina1: [
+          {
+            speaker: 'marina',
+            text: 'Здравствуйте. Вы не знаете, случайно, кем вы были до того, как сели за этот пульт?',
+            voice: 'marina',
+            emotion: 'calm',
+            audio: 'audio/marina_mystery.mp3',
+            choices: [
+              { text: 'Я оператор горячей линии. Боль ничего не помню.', next: 'marinaDodge', flag: { trustMarina: 0 } },
+              { text: 'Зачем вы спрашиваете? Кто вы такая?', next: 'marinaConfront', flag: { trustMarina: -1 } },
+              { text: '...Не помню. А вы кто?', next: 'marinaMystery', flag: { trustMarina: 1 } }
+            ]
+          }
+        ],
+        marinaDodge: [
+          { speaker: 'marina', text: 'Интересно. Память стирается первой. Будьте осторожны, оператор.', voice: 'marina', emotion: 'calm', next: 'ring3' }
+        ],
+        marinaConfront: [
+          { speaker: 'marina', text: 'Я — тот, кто звонит вам второй раз. И последний, если вы будете грубить.', voice: 'marina', emotion: 'cold', next: 'ring3' }
+        ],
+        marinaMystery: [
+          { speaker: 'marina', text: 'Я — эхо прошлого смены. А вы — следующий в очереди.', voice: 'marina', emotion: 'mysterious', audio: 'audio/marina_echo.mp3', next: 'ring3' }
+        ],
+
+        ring3: [
+          { speaker: 'system', text: '*Третий звонок. Внутренняя линия. Диспетчер.*', voice: null, emotion: null, next: 'callDispatcher1' }
+        ],
+        callDispatcher1: [
+          {
+            speaker: 'dispatcher',
+            text: 'Оператор! Вы там вообще в курсе, что происходит? На линии двое пострадавших, а связь с ними пропадает!',
+            voice: 'dispatcher',
+            emotion: 'angry',
+            audio: 'audio/dispatcher_angry.mp3',
+            next: 'dispatcherInterruption'
+          }
+        ],
+        dispatcherInterruption: [
+          { speaker: 'system', text: '*Линия прерывается скрежетом. На экране мигает надпись: "СИГНАЛ ТРЕВОГИ".*', voice: null, emotion: null, next: 'finalChoice' }
+        ],
+
+        finalChoice: [
+          {
+            speaker: 'system',
+            text: '*Все три линии звонят одновременно. Кто вы выбираете?*',
+            voice: null,
+            emotion: null,
+            choices: [
+              { text: 'Алексей — он в опасности.', next: 'endingAlexey', flag: {} },
+              { text: 'Марина — она знает правду.', next: 'endingMarina', flag: {} },
+              { text: 'Диспетчер — он мой начальник.', next: 'endingDispatcher', flag: {} },
+              { text: 'Положить все трубки и уйти.', next: 'endingLeave', flag: {} }
+            ]
+          }
+        ],
+
+        endingAlexey: [
+          { speaker: 'alexey', text: 'Спасибо... вы спасли меня. Но помните: двери всегда открыты для тех, кто звонит.', voice: 'alexey', emotion: 'relief', ending: 'alexey' },
+          { speaker: 'system', text: '*Утро. Смена закончилась. Вы выходите на улицу. За вами наблюдают из окон подъезда.*', voice: null, emotion: null, ending: 'alexey' }
+        ],
+        endingMarina: [
+          { speaker: 'marina', text: 'Вы выбрали меня. Теперь вы часть сценария. Добро пожаловать в ночную смену.', voice: 'marina', emotion: 'mysterious', audio: 'audio/marina_ending.mp3', ending: 'marina' },
+          { speaker: 'system', text: '*Вы садитесь за пульт. На экране горит ваше имя. Звонок поступает...', voice: null, emotion: null, ending: 'marina' }
+        ],
+        endingDispatcher: [
+          { speaker: 'dispatcher', text: 'Молодец. Ты выбрал порядок. Но порядок — это еще не безопасность.', voice: 'dispatcher', emotion: 'strict', ending: 'dispatcher' },
+          { speaker: 'system', text: '*Вы никогда больше не выходили из здания колл-центра.*', voice: null, emotion: null, ending: 'dispatcher' }
+        ],
+        endingLeave: [
+          { speaker: 'system', text: '*Вы выходите из здания. Телефон в кармане вибрирует. Неизвестный номер.*', voice: null, emotion: null, ending: 'leave' },
+          { speaker: 'system', text: '*Вы не отвечаете. Игра окончена.*', voice: null, emotion: null, ending: 'leave' }
+        ]
+      },
+
+      endings: {
+        alexey: {
+          title: 'Спасённый',
+          text: 'Вы спасли Алексея. Но ночная горячая линия не забывает своих операторов. Вы выжили — пока.'
+        },
+        marina: {
+          title: 'Новая смена',
+          text: 'Вы приняли приглашение Марины. Теперь вы — часть горячей линии. Вечно.'
+        },
+        dispatcher: {
+          title: 'Порядок',
+          text: 'Вы выбрали диспетчера. Порядок восстановлен. Вы больше никогда не услышите звонок.'
+        },
+        leave: {
+          title: 'Уход',
+          text: 'Вы ушли. Но телефон всё ещё звонит. И кто-то на конце линии знает ваш номер.'
+        }
+      },
+
+      speakers: {
+        operator: { label: 'ОПЕРАТОР', colorClass: 'speaker-operator', borderClass: 'border-operator', face: '🎧' },
+        alexey: { label: 'АЛЕКСЕЙ', colorClass: 'speaker-caller', borderClass: 'border-caller', face: '😰' },
+        marina: { label: 'МАРИНА', colorClass: 'speaker-marina', borderClass: 'border-marina', face: '🕯️' },
+        dispatcher: { label: 'ДИСПЕТЧЕР', colorClass: 'speaker-dispatcher', borderClass: 'border-dispatcher', face: '👔' },
+        system: { label: 'СИСТЕМА', colorClass: 'speaker-caller', borderClass: 'border-caller', face: '🖥️' }
+      },
+
+      voices: {
+        operator: { lang: 'ru-RU', rate: 0.95, pitch: 1.0 },
+        alexey: { lang: 'ru-RU', rate: 1.1, pitch: 1.15 },
+        marina: { lang: 'ru-RU', rate: 0.85, pitch: 0.9 },
+        dispatcher: { lang: 'ru-RU', rate: 1.0, pitch: 0.85 }
+      }
+    };
+
+    const state = JSON.parse(JSON.stringify(DIALOGUE.initialState));
+    let currentSceneId = 'start';
+    let nodeIndex = 0;
+    let isWaitingForChoice = false;
+    let isPlayingAudio = false;
+    let currentAudio = null;
+
+    const screenTitle = document.getElementById('screen-title');
+    const screenGame = document.getElementById('screen-game');
+    const screenEnding = document.getElementById('screen-ending');
+    const elClock = document.getElementById('clock');
+    const elCallStatus = document.getElementById('call-status');
+    const elPortrait = document.getElementById('portrait');
+    const elSpeaker = document.getElementById('speaker');
+    const elText = document.getElementById('text');
+    const elChoices = document.getElementById('choices');
+    const elHint = document.getElementById('continue-hint');
+    const elDialogueBox = document.querySelector('.dialogue-box');
+    const btnStart = document.getElementById('btn-start');
+    const btnRestart = document.getElementById('btn-restart');
+
+    function getCurrentNode() {
+      return DIALOGUE.scenes[currentSceneId][nodeIndex];
+    }
+
+    function showScreen(screen) {
+      [screenTitle, screenGame, screenEnding].forEach(s => {
+        s.classList.remove('visible');
+        s.classList.add('hidden');
+      });
+      screen.classList.remove('hidden');
+      screen.classList.add('visible');
+    }
+
+    function stopAudio() {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+        currentAudio = null;
+      }
+      isPlayingAudio = false;
+    }
+
+    function playNodeAudio(node) {
+      stopAudio();
+      if (!node.audio) {
+        isPlayingAudio = false;
+        speakFallback(node.text, node.voice);
+        return;
+      }
+      isPlayingAudio = true;
+      elHint.style.display = 'none';
+      currentAudio = new Audio(node.audio);
+      currentAudio.addEventListener('error', () => {
+        isPlayingAudio = false;
+        currentAudio = null;
+        speakFallback(node.text, node.voice);
+      });
+      currentAudio.play().catch(() => {
+        isPlayingAudio = false;
+        currentAudio = null;
+        speakFallback(node.text, node.voice);
+      });
+      currentAudio.addEventListener('ended', () => {
+        isPlayingAudio = false;
+        currentAudio = null;
+        if (!isWaitingForChoice) elHint.style.display = 'block';
+      });
+    }
+
+    function speakFallback(text, voiceKey) {
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      const v = DIALOGUE.voices[voiceKey] || DIALOGUE.voices.operator;
+      u.lang = v.lang;
+      u.rate = v.rate;
+      u.pitch = v.pitch;
+      u.volume = 1;
+      const voices = window.speechSynthesis.getVoices();
+      const match = voices.find(vo => vo.lang.startsWith(v.lang.split('-')[0]));
+      if (match) u.voice = match;
+      u.onend = () => {
+        if (!isWaitingForChoice) elHint.style.display = 'block';
+      };
+      window.speechSynthesis.speak(u);
+    }
+
+    function renderNode() {
+      stopAudio();
+      const node = getCurrentNode();
+      const speakerInfo = DIALOGUE.speakers[node.speaker] || DIALOGUE.speakers.system;
+
+      elDialogueBox.className = 'dialogue-box ' + (node.borderClass || '');
+      elSpeaker.className = 'speaker ' + (speakerInfo.colorClass || '');
+      elSpeaker.textContent = speakerInfo.label;
+      elPortrait.innerHTML = '<div class="portrait-face">' + speakerInfo.face + '</div>';
+      elPortrait.className = 'character-portrait ' + (node.borderClass || '');
+
+      elText.textContent = node.text;
+
+      playNodeAudio(node);
+
+      if (node.choices && node.choices.length > 0) {
+        showChoices(node.choices);
+        isWaitingForChoice = true;
+      } else {
+        isWaitingForChoice = false;
+      }
+
+      if (node.ending) {
+        setTimeout(showEnding, 1500, node.ending);
+      }
+    }
+
+    function showChoices(choices) {
+      elChoices.innerHTML = '';
+      elHint.style.display = 'none';
+      choices.forEach((choice) => {
+        const btn = document.createElement('button');
+        btn.className = 'choice-btn';
+        btn.textContent = choice.text;
+        btn.addEventListener('click', () => handleChoice(choice));
+        elChoices.appendChild(btn);
+      });
+    }
+
+    function handleChoice(choice) {
+      stopAudio();
+      if (choice.flag) {
+        Object.assign(state, choice.flag);
+      }
+      state.calls += 1;
+      updateClock();
+
+      if (choice.next) {
+        currentSceneId = choice.next;
+        nodeIndex = 0;
+        renderNode();
+      } else {
+        nodeIndex += 1;
+        if (nodeIndex >= DIALOGUE.scenes[currentSceneId].length) {
+          showEnding(state.ending || 'leave');
+        } else {
+          renderNode();
+        }
+      }
+    }
+
+    function updateClock() {
+      const hours = Math.floor(state.calls / 2);
+      const minutes = (state.calls * 17) % 60;
+      elClock.textContent = String(hours).padStart(2, '0') + ':' + String(minutes).padStart(2, '0');
+    }
+
+    function showEnding(endingKey) {
+      stopAudio();
+      const ending = DIALOGUE.endings[endingKey] || DIALOGUE.endings.leave;
+      document.getElementById('ending-title').textContent = ending.title;
+      document.getElementById('ending-text').textContent = ending.text;
+      showScreen(screenEnding);
+    }
+
+    btnStart.addEventListener('click', () => {
+      stopAudio();
+      showScreen(screenGame);
+      renderNode();
+    });
+
+    btnRestart.addEventListener('click', () => {
+      stopAudio();
+      Object.assign(state, JSON.parse(JSON.stringify(DIALOGUE.initialState)));
+      currentSceneId = 'start';
+      nodeIndex = 0;
+      updateClock();
+      showScreen(screenTitle);
+    });
+
+    document.addEventListener('click', (e) => {
+      if (e.target.classList.contains('choice-btn')) return;
+      if (screenEnding.classList.contains('visible')) return;
+
+      if (isPlayingAudio) {
+        stopAudio();
+        elHint.style.display = 'block';
+        return;
+      }
+
+      if (screenGame.classList.contains('visible') && !isWaitingForChoice) {
+        nodeIndex += 1;
+        if (nodeIndex >= DIALOGUE.scenes[currentSceneId].length) {
+          showEnding(state.ending || 'leave');
+        } else {
+          renderNode();
+        }
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        if (isPlayingAudio) {
+          stopAudio();
+          elHint.style.display = 'block';
+          return;
+        }
+        if (screenGame.classList.contains('visible') && !isWaitingForChoice) {
+          nodeIndex += 1;
+          if (nodeIndex >= DIALOGUE.scenes[currentSceneId].length) {
+            showEnding(state.ending || 'leave');
+          } else {
+            renderNode();
+          }
+        }
+      }
+    });
+
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.onvoiceschanged = () => {};
+    }
+  </script>
 </body>
 </html>
